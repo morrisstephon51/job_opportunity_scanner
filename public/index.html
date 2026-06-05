@@ -26,7 +26,6 @@
       min-height: 100vh;
     }
 
-    /* ---- GRID BG ---- */
     body::before {
       content: '';
       position: fixed;
@@ -47,7 +46,6 @@
       padding: 56px 24px 80px;
     }
 
-    /* ---- HEADER ---- */
     header {
       display: flex;
       align-items: center;
@@ -89,14 +87,12 @@
       margin-left: 64px;
     }
 
-    /* ---- GRID ---- */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 20px;
     }
 
-    /* ---- CARD ---- */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -129,21 +125,21 @@
 
     .card:hover::before { opacity: 1; }
 
-    .card-icon {
-      font-size: 32px;
-      line-height: 1;
-    }
-
-    .card-title {
-      font-size: 18px;
-      font-weight: 700;
-    }
+    .card-icon { font-size: 32px; line-height: 1; }
+    .card-title { font-size: 18px; font-weight: 700; }
 
     .card-desc {
       font-size: 14px;
       color: var(--muted);
       line-height: 1.6;
       flex: 1;
+    }
+
+    .card-url {
+      font-size: 11px;
+      color: #555;
+      font-family: monospace;
+      word-break: break-all;
     }
 
     .card-footer {
@@ -163,21 +159,18 @@
       border: 1px solid;
     }
 
-    .tag-green { color: var(--green); border-color: rgba(0,255,136,.3); background: rgba(0,255,136,.07); }
-    .tag-purple { color: #b67de8; border-color: rgba(123,47,190,.4); background: rgba(123,47,190,.1); }
-    .tag-blue   { color: #7ec8e3; border-color: rgba(126,200,227,.3); background: rgba(126,200,227,.07); }
+    .tag-green  { color: var(--green);  border-color: rgba(0,255,136,.3);   background: rgba(0,255,136,.07); }
+    .tag-purple { color: #b67de8;       border-color: rgba(123,47,190,.4);  background: rgba(123,47,190,.1); }
+    .tag-blue   { color: #7ec8e3;       border-color: rgba(126,200,227,.3); background: rgba(126,200,227,.07); }
+    .tag-orange { color: #ffaa55;       border-color: rgba(255,170,85,.3);  background: rgba(255,170,85,.07); }
 
     .arrow {
       font-size: 18px;
       color: var(--muted);
       transition: color .2s, transform .2s;
     }
-    .card:hover .arrow {
-      color: var(--green);
-      transform: translateX(4px);
-    }
+    .card:hover .arrow { color: var(--green); transform: translateX(4px); }
 
-    /* ---- DIVIDER ---- */
     .section-label {
       font-size: 11px;
       font-weight: 700;
@@ -196,14 +189,12 @@
       background: var(--border);
     }
 
-    /* ---- FOOTER ---- */
     footer {
       margin-top: 64px;
       text-align: center;
       font-size: 13px;
       color: #555;
     }
-
     footer strong { color: var(--green); }
   </style>
 </head>
@@ -216,14 +207,14 @@
   </header>
   <p class="subtitle">Every site built with Claude Code — one place to access them all.</p>
 
-  <!-- LIVE SITES -->
   <div class="section-label">Live Sites</div>
   <div class="grid">
 
     <a class="card" href="https://stefan-portfolio-cam6stef.vercel.app" target="_blank" rel="noopener">
       <div class="card-icon">🧑‍💻</div>
       <div class="card-title">Stefan's Portfolio</div>
-      <div class="card-desc">Personal portfolio site with The Plug AI branding — dark theme, animated hero, skills, experience, and projects.</div>
+      <div class="card-desc">Personal portfolio with The Plug AI branding — dark theme, animated hero, skills, experience, and projects.</div>
+      <div class="card-url">stefan-portfolio-cam6stef.vercel.app</div>
       <div class="card-footer">
         <span class="tag tag-green">Portfolio</span>
         <span class="arrow">→</span>
@@ -234,6 +225,7 @@
       <div class="card-icon">🔌</div>
       <div class="card-title">The Plug AI</div>
       <div class="card-desc">Community platform for AI literacy — workshops, lessons, live activity, and resources for learners left out of the tech conversation.</div>
+      <div class="card-url">psychic-bassoon-cam6stef.vercel.app</div>
       <div class="card-footer">
         <span class="tag tag-purple">Community</span>
         <span class="arrow">→</span>
@@ -244,16 +236,18 @@
       <div class="card-icon">⚙️</div>
       <div class="card-title">Content Machine</div>
       <div class="card-desc">Full AI content engine — video generation, flyer studio, A/B hook agent, hashtag research, newsletter skill, and multi-platform publishing.</div>
+      <div class="card-url">content-machine-cam6stef.vercel.app</div>
       <div class="card-footer">
         <span class="tag tag-green">AI Tool</span>
         <span class="arrow">→</span>
       </div>
     </a>
 
-    <a class="card" href="https://ai-video-reel-generator-cam6stef.vercel.app" target="_blank" rel="noopener">
+    <a class="card" href="https://ai-video-reel-generator.vercel.app" target="_blank" rel="noopener">
       <div class="card-icon">🎬</div>
       <div class="card-title">AI Video Reel Generator</div>
-      <div class="card-desc">Generate short-form video reels from a prompt — AI script, image generation, voiceover, Canvas + MediaRecorder video output.</div>
+      <div class="card-desc">Generate short-form video reels from a prompt — AI script, image generation, voiceover, and Canvas + MediaRecorder video output.</div>
+      <div class="card-url">ai-video-reel-generator.vercel.app</div>
       <div class="card-footer">
         <span class="tag tag-blue">Video AI</span>
         <span class="arrow">→</span>
@@ -263,16 +257,27 @@
     <a class="card" href="https://psychic-octo-engine-cam6stef.vercel.app" target="_blank" rel="noopener">
       <div class="card-icon">🚀</div>
       <div class="card-title">Psychic Octo Engine</div>
-      <div class="card-desc">Static site deployment — latest build on Vercel.</div>
+      <div class="card-desc">Static site — latest production deployment on Vercel.</div>
+      <div class="card-url">psychic-octo-engine-cam6stef.vercel.app</div>
       <div class="card-footer">
         <span class="tag tag-purple">Site</span>
         <span class="arrow">→</span>
       </div>
     </a>
 
+    <a class="card" href="https://community-intake-routing.vercel.app" target="_blank" rel="noopener">
+      <div class="card-icon">📋</div>
+      <div class="card-title">Community Intake Routing</div>
+      <div class="card-desc">Community intake and routing app — newest build, deployed today.</div>
+      <div class="card-url">community-intake-routing.vercel.app</div>
+      <div class="card-footer">
+        <span class="tag tag-orange">New</span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
   </div>
 
-  <!-- TOOLS -->
   <div class="section-label">Tools &amp; Scanners</div>
   <div class="grid">
 
@@ -280,6 +285,7 @@
       <div class="card-icon">🔍</div>
       <div class="card-title">Job Opportunity Scanner</div>
       <div class="card-desc">Daily AI/EdTech/Healthcare IT job scanner. Pulls top 3 matches with fit scores and tailored cover letters via ZipRecruiter + Indeed.</div>
+      <div class="card-url">github.com/morrisstephon51/job_opportunity_scanner</div>
       <div class="card-footer">
         <span class="tag tag-green">Scanner</span>
         <span class="arrow">→</span>
@@ -288,7 +294,6 @@
 
   </div>
 
-  <!-- GITHUB -->
   <div class="section-label">GitHub</div>
   <div class="grid">
 
@@ -296,6 +301,7 @@
       <div class="card-icon">🐙</div>
       <div class="card-title">GitHub Profile</div>
       <div class="card-desc">morrisstephon51 — all repos, branches, and work in progress.</div>
+      <div class="card-url">github.com/morrisstephon51</div>
       <div class="card-footer">
         <span class="tag tag-blue">GitHub</span>
         <span class="arrow">→</span>
