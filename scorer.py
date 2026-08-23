@@ -40,7 +40,10 @@ def is_recent(job: dict) -> bool:
 
 def _title_score(job: dict) -> float:
     title = (job.get("title") or "").lower()
-    hits = sum(1 for s in TITLE_SIGNALS if s in title)
+    # Match each signal as a whole word/phrase, not a bare substring. Otherwise
+    # short signals like "ai" match inside unrelated titles (retAIl,
+    # mAIntenance, repAIr, hAIr), inflating the heaviest-weighted score.
+    hits = sum(1 for s in TITLE_SIGNALS if re.search(rf"\b{re.escape(s)}\b", title))
     return min(hits / 3, 1.0)  # cap at 1.0; 3+ hits = perfect
 
 
