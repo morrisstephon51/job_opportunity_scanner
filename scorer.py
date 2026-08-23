@@ -66,13 +66,18 @@ def _location_score(job: dict) -> float:
 
 def _salary_score(job: dict) -> float:
     raw = (job.get("salary") or "").lower().replace(",", "")
-    nums = re.findall(r"\d+", raw)
-    if not nums:
+    # Grab the first number, keeping any 'k' thousands suffix. A bare
+    # r"\d+" reads "$85k" as 85 dollars, scoring a strong salary as far
+    # below floor; capture the "k" so "$85k" resolves to 85,000.
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(k)?", raw)
+    if not m:
         return 0.5  # no salary listed — neutral
-    low = int(nums[0])
+    low = float(m.group(1))
+    if m.group(2):  # "k" suffix -> thousands
+        low *= 1000
     # Convert hourly to annual rough estimate
     if "hour" in raw or "/hr" in raw or "per hour" in raw:
-        low = low * 2080
+        low *= 2080
     return 1.0 if low >= SALARY_FLOOR else max(0.0, low / SALARY_FLOOR)
 
 
