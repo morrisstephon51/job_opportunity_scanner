@@ -57,7 +57,10 @@ def _location_score(job: dict) -> float:
     loc = (job.get("location") or "").lower()
     if "remote" in loc:
         return 1.0
-    if "chicago" in loc or "il" in loc:
+    # Match the Illinois state code as a whole token, not a bare substring.
+    # `"il" in loc` wrongly matched Nashville, Philadelphia, Milwaukee, Mobile,
+    # etc. ("-ville"/"mil"/"phil"/"bil" all contain "il"), inflating their score.
+    if "chicago" in loc or re.search(r"\bil\b", loc) or "illinois" in loc:
         return 1.0
     if "hybrid" in loc:
         return 0.7
