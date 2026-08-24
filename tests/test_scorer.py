@@ -14,6 +14,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from config import TITLE_SIGNALS  # noqa: E402
 from scorer import _title_score  # noqa: E402
 
 
@@ -36,12 +37,17 @@ def test_ai_substring_does_not_false_match():
 
 def test_real_signals_still_score():
     # (title, expected) — expected reflects genuine whole-token signal hits / 3.
+    # "Healthcare IT Trainer" always hits "healthcare it"; it ALSO hits
+    # "trainer" once PR #10 adds that signal to TITLE_SIGNALS. Derive the
+    # expected count from the live list so this fixture is correct under any
+    # merge order of the two PRs (it hard-broke at 1/3 vs 2/3 when merged).
+    trainer_signal = 1 if "trainer" in TITLE_SIGNALS else 0
     cases = [
         ("AI Educator", 2 / 3),             # ai + educator
         ("Instructional Designer", 2 / 3),  # instructional + designer
         ("AI/ML Learning Specialist", 1.0),  # ai + learning + specialist
         ("Training Coordinator", 2 / 3),    # training + coordinator
-        ("Healthcare IT Trainer", 1 / 3),    # healthcare it (only real token)
+        ("Healthcare IT Trainer", (1 + trainer_signal) / 3),  # healthcare it (+ trainer)
     ]
     for title, expected in cases:
         assert abs(_s(title) - expected) < 1e-9, f"{title!r} -> {_s(title)} != {expected}"
