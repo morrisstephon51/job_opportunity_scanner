@@ -27,6 +27,15 @@ def is_recent(job: dict) -> bool:
     m = re.search(r"(\d+)\s+day", raw)
     if m:
         return int(m.group(1)) <= MAX_DAYS_OLD
+    # "X weeks ago" / "X months ago" — the \d+ day regex above never matches
+    # these, so without this they fall through to the include-by-default return
+    # and stale postings (e.g. "6 weeks ago" = 42 days) slip past MAX_DAYS_OLD.
+    m = re.search(r"(\d+)\s+week", raw)
+    if m:
+        return int(m.group(1)) * 7 <= MAX_DAYS_OLD
+    m = re.search(r"(\d+)\s+month", raw)
+    if m:
+        return int(m.group(1)) * 30 <= MAX_DAYS_OLD
     # Try ISO date
     for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%SZ"):
         try:
