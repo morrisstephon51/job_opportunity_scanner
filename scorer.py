@@ -24,7 +24,12 @@ def is_recent(job: dict) -> bool:
     # Handle "X days ago" / "X hours ago" / "today" / "just posted"
     if any(x in raw for x in ("today", "just posted", "hours ago", "hour ago")):
         return True
-    m = re.search(r"(\d+)\s+day", raw)
+    # "(\d+)\s+day" alone missed Indeed's most common stale label, "30+ days
+    # ago": the "+" sits between the number and the space, so the old regex
+    # never matched and the posting fell through to the include-by-default
+    # `return True`. Allow an optional "+" so "30+ days ago" is filtered like
+    # "30 days ago".
+    m = re.search(r"(\d+)\+?\s*day", raw)
     if m:
         return int(m.group(1)) <= MAX_DAYS_OLD
     # Try ISO date
