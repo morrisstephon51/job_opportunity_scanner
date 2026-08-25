@@ -28,13 +28,21 @@ def is_recent(job: dict) -> bool:
     if m:
         return int(m.group(1)) <= MAX_DAYS_OLD
     # Try ISO date
+    # Two bugs made this branch dead code: (1) raw[:len(fmt)] truncated the
+    # date because a spec like "%Y-%m-%d" is 8 format chars but matches a
+    # 10-char date ("%Y" is 2 chars, 4 digits), so strptime got e.g.
+    # "2026-08-" and always raised; (2) raw was lower()-cased above, so the
+    # literal 'T'/'Z' in the formats never matched. Every ISO-dated posting
+    # therefore fell through to the include-by-default return and skipped the
+    # recency filter entirely — a 2020 job scored as if fresh. Match the full,
+    # re-uppercased string instead.
+    iso = raw.upper()
     for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%SZ"):
         try:
-            posted = datetime.strptime(raw[:len(fmt)], fmt).replace(tzinfo=timezone.utc)
-            delta = datetime.now(timezone.utc) - posted
-            return delta.days <= MAX_DAYS_OLD
+            posted = datetime.strptime(iso, fmt).replace(tzinfo=timezone.utc)
         except ValueError:
             continue
+        return (datetime.now(timezone.utc) - posted).days <= MAX_DAYS_OLD
     return True  # unknown format — include
 
 
