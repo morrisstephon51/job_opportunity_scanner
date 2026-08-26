@@ -57,5 +57,5 @@ def print_alerts(top_jobs: list[dict]) -> None:
         if job["fit_score"] >= ALERT_SCORE_THRESHOLD:
             print(
                 f"\n🔔  ALERT — Score {job['fit_score']}/10: "
-                f"{job['title']} @ {job['company']} | {job.get('url', '')}"
+                f"{job.get('title', 'N/A')} @ {job.get('company', 'N/A')} | {job.get('url', '')}"
             )
