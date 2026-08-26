@@ -4,7 +4,7 @@ Formats scan results into a Markdown report and prints alerts.
 from __future__ import annotations
 import os
 from datetime import date
-from config import ALERT_SCORE_THRESHOLD
+from config import ALERT_SCORE_THRESHOLD, SALARY_FLOOR
 
 
 def write_report(top_jobs: list[dict], cover_letters: list[str]) -> str:
@@ -19,7 +19,7 @@ def write_report(top_jobs: list[dict], cover_letters: list[str]) -> str:
         "",
         f"**Sources:** ZipRecruiter, Indeed  ",
         f"**Tracks:** IT Support · EdTech/Training · AI/Tech Education · Healthcare IT  ",
-        f"**Salary floor:** $55,000  ",
+        f"**Salary floor:** ${SALARY_FLOOR:,}  ",
         "",
         "---",
         "",
