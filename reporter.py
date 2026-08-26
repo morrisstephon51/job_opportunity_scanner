@@ -9,6 +9,12 @@ from config import ALERT_SCORE_THRESHOLD, SALARY_FLOOR
 
 def write_report(top_jobs: list[dict], cover_letters: list[str]) -> str:
     """Write jobs/scan-YYYY-MM-DD.md and return the file path."""
+    if len(cover_letters) != len(top_jobs):
+        raise ValueError(
+            "write_report expects one cover letter per job: got "
+            f"{len(top_jobs)} jobs but {len(cover_letters)} cover letters. "
+            "Refusing to write a report that would silently drop matches."
+        )
     today = date.today().isoformat()
     out_dir = os.path.join(os.path.dirname(__file__), "jobs")
     os.makedirs(out_dir, exist_ok=True)
