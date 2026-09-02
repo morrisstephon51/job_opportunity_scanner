@@ -70,9 +70,15 @@ def _salary_score(job: dict) -> float:
     if not nums:
         return 0.5  # no salary listed — neutral
     low = int(nums[0])
-    # Convert hourly to annual rough estimate
+    # Normalize non-annual pay periods to a rough annual estimate so a figure
+    # that clears the floor per hour/week/month is not misread as an annual
+    # salary far below it (e.g. "$5,000/month" == $60k/yr, not $5k/yr).
     if "hour" in raw or "/hr" in raw or "per hour" in raw:
-        low = low * 2080
+        low = low * 2080          # 40 hrs/wk * 52 wks
+    elif "week" in raw or "/wk" in raw or "per week" in raw:
+        low = low * 52
+    elif "month" in raw or "/mo" in raw or "per month" in raw:
+        low = low * 12
     return 1.0 if low >= SALARY_FLOOR else max(0.0, low / SALARY_FLOOR)
 
 
