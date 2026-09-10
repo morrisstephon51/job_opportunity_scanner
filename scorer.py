@@ -24,23 +24,43 @@ def is_recent(job: dict) -> bool:
     # Handle "X days ago" / "X hours ago" / "today" / "just posted"
     if any(x in raw for x in ("today", "just posted", "hours ago", "hour ago")):
         return True
-    m = re.search(r"(\d+)\s+day", raw)
+    # Allow an optional "+" between the number and "day" so Indeed's most common
+    # stale label, "30+ days ago", is filtered exactly like "30 days ago".
+    # A bare r"(\d+)\s+day" never matched the "+" form, so 30/45/60+ day
+    # postings fell through to the include-by-default return and scored as fresh.
+    m = re.search(r"(\d+)\+?\s*day", raw)
     if m:
         return int(m.group(1)) <= MAX_DAYS_OLD
-    # Try ISO date
+    # "X weeks ago" / "X months ago" — the day regex above never matches these,
+    # so without these branches they fall through to include-by-default and
+    # stale postings (e.g. "6 weeks ago" = 42 days) slip past MAX_DAYS_OLD.
+    m = re.search(r"(\d+)\s+week", raw)
+    if m:
+        return int(m.group(1)) * 7 <= MAX_DAYS_OLD
+    m = re.search(r"(\d+)\s+month", raw)
+    if m:
+        return int(m.group(1)) * 30 <= MAX_DAYS_OLD
+    # Try ISO date. This branch was dead code from two bugs: (1) raw[:len(fmt)]
+    # truncated the date because a spec like "%Y-%m-%d" is 8 format chars but
+    # matches a 10-char date, so strptime always raised; (2) raw was lower()-cased
+    # above, so the literal 'T'/'Z' in the formats never matched. Match the full,
+    # re-uppercased string instead — otherwise a 2020 job scored as if fresh.
+    iso = raw.upper()
     for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%SZ"):
         try:
-            posted = datetime.strptime(raw[:len(fmt)], fmt).replace(tzinfo=timezone.utc)
-            delta = datetime.now(timezone.utc) - posted
-            return delta.days <= MAX_DAYS_OLD
+            posted = datetime.strptime(iso, fmt).replace(tzinfo=timezone.utc)
         except ValueError:
             continue
+        return (datetime.now(timezone.utc) - posted).days <= MAX_DAYS_OLD
     return True  # unknown format — include
 
 
 def _title_score(job: dict) -> float:
     title = (job.get("title") or "").lower()
-    hits = sum(1 for s in TITLE_SIGNALS if s in title)
+    # Match each signal as a whole word/phrase, not a bare substring. Otherwise
+    # short signals like "ai" match inside unrelated titles (retAIl,
+    # mAIntenance, repAIr, hAIr), inflating the heaviest-weighted score.
+    hits = sum(1 for s in TITLE_SIGNALS if re.search(rf"\b{re.escape(s)}\b", title))
     return min(hits / 3, 1.0)  # cap at 1.0; 3+ hits = perfect
 
 
@@ -57,7 +77,10 @@ def _location_score(job: dict) -> float:
     loc = (job.get("location") or "").lower()
     if "remote" in loc:
         return 1.0
-    if "chicago" in loc or "il" in loc:
+    # Match the Illinois state code as a whole token, not a bare substring.
+    # `"il" in loc` wrongly matched Nashville, Philadelphia, Milwaukee, Mobile,
+    # etc. ("-ville"/"mil"/"phil"/"bil" all contain "il"), inflating their score.
+    if "chicago" in loc or re.search(r"\bil\b", loc) or "illinois" in loc:
         return 1.0
     if "hybrid" in loc:
         return 0.7
@@ -66,17 +89,22 @@ def _location_score(job: dict) -> float:
 
 def _salary_score(job: dict) -> float:
     raw = (job.get("salary") or "").lower().replace(",", "")
-    nums = re.findall(r"\d+", raw)
-    if not nums:
+    # Grab the first number, keeping any 'k' thousands suffix. A bare r"\d+"
+    # reads "$85k" as 85 dollars, scoring a strong salary far below floor;
+    # capture the "k" so "$85k" resolves to 85,000.
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(k)?", raw)
+    if not m:
         return 0.5  # no salary listed — neutral
-    low = int(nums[0])
+    low = float(m.group(1))
+    if m.group(2):  # "k" suffix -> thousands
+        low *= 1000
     # Normalize to an annual figure before comparing to the floor.
     if "hour" in raw or "/hr" in raw or "per hour" in raw:
-        low = low * 2080
+        low *= 2080
     elif "week" in raw or "/wk" in raw or "per week" in raw:
-        low = low * 52
+        low *= 52
     elif "month" in raw or "/mo" in raw or "per month" in raw:
-        low = low * 12
+        low *= 12
     return 1.0 if low >= SALARY_FLOOR else max(0.0, low / SALARY_FLOOR)
 
 
