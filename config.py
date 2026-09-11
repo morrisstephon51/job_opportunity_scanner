@@ -68,6 +68,9 @@ SCORE_WEIGHTS = {
 # --- Title keywords that signal strong fit ---
 TITLE_SIGNALS = [
     "ai", "educator", "education", "instructional", "designer", "training",
+    "trainer",  # "training" does not substring-match "trainer"; the exact
+                # role word in RESUME_TRACKS "EdTech / Training" + the
+                # "healthcare IT trainer" search keyword was scoring zero.
     "learning", "edtech", "digital", "curriculum", "healthcare it",
     "community", "coordinator", "specialist", "facilitator", "developer",
 ]
