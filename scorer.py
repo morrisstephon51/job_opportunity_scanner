@@ -40,6 +40,14 @@ def is_recent(job: dict) -> bool:
     m = re.search(r"(\d+)\s+month", raw)
     if m:
         return int(m.group(1)) * 30 <= MAX_DAYS_OLD
+    # "X years ago" — the same class as the weeks/months branches above and
+    # the exact miss they warned about. A "1 year ago" (365d) / "2 years ago"
+    # repost matched none of the numeric branches, fell through to the
+    # include-by-default `return True`, and scored as fresh despite being far
+    # past MAX_DAYS_OLD. Convert years->days (x365) like its siblings.
+    m = re.search(r"(\d+)\s+year", raw)
+    if m:
+        return int(m.group(1)) * 365 <= MAX_DAYS_OLD
     # Try ISO date. This branch was dead code from two bugs: (1) raw[:len(fmt)]
     # truncated the date because a spec like "%Y-%m-%d" is 8 format chars but
     # matches a 10-char date, so strptime always raised; (2) raw was lower()-cased
