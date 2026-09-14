@@ -89,15 +89,42 @@ def _location_score(job: dict) -> float:
 
 def _salary_score(job: dict) -> float:
     raw = (job.get("salary") or "").lower().replace(",", "")
-    # Grab the first number, keeping any 'k' thousands suffix. A bare r"\d+"
-    # reads "$85k" as 85 dollars, scoring a strong salary far below floor;
-    # capture the "k" so "$85k" resolves to 85,000.
-    m = re.search(r"(\d+(?:\.\d+)?)\s*(k)?", raw)
-    if not m:
+    # A salary is usually a range, so parse every figure (each with its optional
+    # 'k' thousands suffix) instead of blindly trusting the first number. Reading
+    # only the first number misfired on two common real-world formats:
+    #   • "$0 - $200k DOE" — the low bound is a placeholder 0 (negotiable / DOE),
+    #     so the role scored as if it paid nothing and got buried despite topping
+    #     out at $200k.
+    #   • "$85 - $110k" — the 'k' rides only the upper bound, so the lower bound
+    #     read as $85 (not $85k) and cratered the score.
+    tokens = re.findall(r"(\d+(?:\.\d+)?)\s*(k)?", raw)
+    if not tokens:
         return 0.5  # no salary listed — neutral
-    low = float(m.group(1))
-    if m.group(2):  # "k" suffix -> thousands
-        low *= 1000
+
+    any_k = any(k for _, k in tokens)
+
+    def to_dollars(num: str, k: str) -> float:
+        val = float(num)
+        if k:                          # explicit "k" -> thousands
+            val *= 1000
+        elif any_k and val < 1000:     # bare bound sharing a range's "k" ("85 - 110k")
+            val *= 1000
+        return val
+
+    # Score off the conservative low bound = the first figure. Only when that low
+    # is a placeholder 0 do we fall back to the next positive figure so the
+    # ceiling still counts. A real low bound is never overridden, so trailing
+    # numbers ("401k" match, PTO weeks, a year) can't hijack the amount.
+    low = to_dollars(*tokens[0])
+    if low <= 0:
+        for num, k in tokens[1:]:
+            candidate = to_dollars(num, k)
+            if candidate > 0:
+                low = candidate
+                break
+    if low <= 0:
+        return 0.5  # only placeholders present — uninformative, treat as unlisted
+
     # Normalize to an annual figure before comparing to the floor.
     if "hour" in raw or "/hr" in raw or "per hour" in raw:
         low *= 2080
