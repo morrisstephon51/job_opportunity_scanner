@@ -99,7 +99,20 @@ def _salary_score(job: dict) -> float:
     if m.group(2):  # "k" suffix -> thousands
         low *= 1000
     # Normalize to an annual figure before comparing to the floor.
-    if "hour" in raw or "/hr" in raw or "per hour" in raw:
+    # Check compound pay cadences BEFORE the bare "week"/"month" branches. A bare
+    # `in` substring test is the recurring collision bug this file already fixed
+    # for "il"/Nashville and "ai"/retail: it reads "biweekly" as weekly (x52, ~2x
+    # too HIGH -> an underpaid role can false-clear the floor and fire an alert)
+    # and "semimonthly" as monthly (x12, ~2x too LOW -> a genuine above-floor role
+    # is scored under the floor and buried). Bi-weekly pays 26 periods/yr and
+    # semi-monthly 24/yr; match those specific forms first so the generic branches
+    # below only ever see true weekly/monthly strings. (Municipal/county postings
+    # -- Cook County included -- routinely quote pay "Bi-weekly".)
+    if "biweekly" in raw or "bi-weekly" in raw:
+        low *= 26
+    elif "semimonthly" in raw or "semi-monthly" in raw:
+        low *= 24
+    elif "hour" in raw or "/hr" in raw or "per hour" in raw:
         low *= 2080
     elif "week" in raw or "/wk" in raw or "per week" in raw:
         low *= 52
