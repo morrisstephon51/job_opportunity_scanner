@@ -114,9 +114,15 @@ def _salary_score(job: dict) -> float:
         low *= 24
     elif "hour" in raw or "/hr" in raw or "per hour" in raw:
         low *= 2080
-    elif "week" in raw or "/wk" in raw or "per week" in raw:
+    # Drop bare "week"/"month" substring tests: they fire on compensation
+    # descriptions like "3 weeks PTO" or "12 months health coverage", turning
+    # an annual $48k salary into $48k * 52 = $2.5M/yr and falsely clearing
+    # SALARY_FLOOR. Use anchored forms only: /week, /wk, per week, weekly
+    # (and the month equivalents). Same substring-collision class already
+    # fixed here for "il"/Nashville, "ai"/retail, "biweekly"/"semimonthly".
+    elif "/week" in raw or "/wk" in raw or "per week" in raw or "weekly" in raw:
         low *= 52
-    elif "month" in raw or "/mo" in raw or "per month" in raw:
+    elif "/month" in raw or "/mo" in raw or "per month" in raw or "monthly" in raw:
         low *= 12
     return 1.0 if low >= SALARY_FLOOR else max(0.0, low / SALARY_FLOOR)
 
