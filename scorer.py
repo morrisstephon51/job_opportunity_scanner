@@ -108,9 +108,15 @@ def _salary_score(job: dict) -> float:
     # semi-monthly 24/yr; match those specific forms first so the generic branches
     # below only ever see true weekly/monthly strings. (Municipal/county postings
     # -- Cook County included -- routinely quote pay "Bi-weekly".)
-    if "biweekly" in raw or "bi-weekly" in raw:
+    # Guard all three orthographic forms of "bi-weekly" before the generic
+    # "weekly" branch: "biweekly", "bi-weekly", and "bi weekly" (space, common
+    # on municipal/county job boards -- Cook County included). Without the space
+    # form, "bi weekly" falls through to "weekly" x52, doubling the multiplier.
+    # Same fix applied to "semi monthly" -> semimonthly x24 (else monthly x12,
+    # a 0.5x undercount that buries above-floor roles). See issue #32.
+    if "biweekly" in raw or "bi-weekly" in raw or "bi weekly" in raw:
         low *= 26
-    elif "semimonthly" in raw or "semi-monthly" in raw:
+    elif "semimonthly" in raw or "semi-monthly" in raw or "semi monthly" in raw:
         low *= 24
     # Drop bare "hour" substring test: it fires on "flexible hours", "24-hour
     # on-call", "office hours" etc., inflating an annual salary by x2080 and
