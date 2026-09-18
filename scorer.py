@@ -101,6 +101,11 @@ def _salary_score(job: dict) -> float:
     # Normalize to an annual figure before comparing to the floor.
     if "hour" in raw or "/hr" in raw or "per hour" in raw:
         low *= 2080
+    elif "/day" in raw or "per day" in raw or "daily" in raw:
+        # Day-rate contracts (e.g. "$400/day") annualize at x260 working days.
+        # Without this branch a $400/day role scores near 0 ($400 vs $55k floor)
+        # even though $400x260 = $104k is well above the floor.
+        low *= 260
     elif "week" in raw or "/wk" in raw or "per week" in raw:
         low *= 52
     elif "month" in raw or "/mo" in raw or "per month" in raw:
