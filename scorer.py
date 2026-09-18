@@ -130,9 +130,9 @@ def _salary_score(job: dict) -> float:
     # SALARY_FLOOR. Use anchored forms only: /week, /wk, per week, weekly
     # (and the month equivalents). Same substring-collision class already
     # fixed here for "il"/Nashville, "ai"/retail, "biweekly"/"semimonthly".
-    elif "/week" in raw or "/wk" in raw or "per week" in raw or "weekly" in raw:
+    elif "/week" in raw or "/wk" in raw or "per week" in raw or "weekly" in raw or "per wk" in raw:
         low *= 52
-    elif "/month" in raw or "/mo" in raw or "per month" in raw or "monthly" in raw:
+    elif "/month" in raw or "/mo" in raw or "per month" in raw or "monthly" in raw or "per mo" in raw:
         low *= 12
     return 1.0 if low >= SALARY_FLOOR else max(0.0, low / SALARY_FLOOR)
 
