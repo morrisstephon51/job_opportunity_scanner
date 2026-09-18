@@ -122,7 +122,7 @@ def _salary_score(job: dict) -> float:
     # on-call", "office hours" etc., inflating an annual salary by x2080 and
     # falsely clearing SALARY_FLOOR. Use anchored forms only, same approach as
     # PR #29 used for week/month.
-    elif "/hour" in raw or "/hr" in raw or "per hour" in raw or "hourly" in raw:
+    elif "/hour" in raw or "/hr" in raw or "per hour" in raw or "hourly" in raw or "per hr" in raw:
         low *= 2080
     # Drop bare "week"/"month" substring tests: they fire on compensation
     # descriptions like "3 weeks PTO" or "12 months health coverage", turning
