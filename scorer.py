@@ -130,6 +130,14 @@ def _salary_score(job: dict) -> float:
     # SALARY_FLOOR. Use anchored forms only: /week, /wk, per week, weekly
     # (and the month equivalents). Same substring-collision class already
     # fixed here for "il"/Nashville, "ai"/retail, "biweekly"/"semimonthly".
+    # Day-rate contracts (e.g. "$400/day", "$250 per day", "$200 daily") must be
+    # multiplied by 260 working days/year before comparing to SALARY_FLOOR.
+    # Without this branch a $400/day rate scores as $400 annual (~0), burying
+    # a $104k/yr consulting engagement. Same missing-cadence class as the
+    # hourly/weekly/monthly siblings fixed in PRs #29/#31/#33/#37/#39.
+    # Placed before the weekly branch to preserve specificity-first ordering.
+    elif "/day" in raw or "per day" in raw or "daily" in raw:
+        low *= 260
     elif "/week" in raw or "/wk" in raw or "per week" in raw or "weekly" in raw or "per wk" in raw:
         low *= 52
     elif "/month" in raw or "/mo" in raw or "per month" in raw or "monthly" in raw or "per mo" in raw:
