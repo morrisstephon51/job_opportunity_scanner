@@ -136,7 +136,13 @@ def _salary_score(job: dict) -> float:
     # a $104k/yr consulting engagement. Same missing-cadence class as the
     # hourly/weekly/monthly siblings fixed in PRs #29/#31/#33/#37/#39.
     # Placed before the weekly branch to preserve specificity-first ordering.
-    elif "/day" in raw or "per day" in raw or "daily" in raw:
+    # Drop bare `"daily" in raw`: it fires on non-cadence descriptions like
+    # "$75,000 + daily pay advance" or "DailyPay app access", inflating an
+    # annual salary by 260x. Same class as PR #31 (bare "hour") and PR #29
+    # (bare "week"/"month"). Require "daily" to be immediately preceded by a
+    # digit (with only whitespace/commas/dots between) so "$400 daily" and
+    # "$400.00 daily" still match while descriptive uses do not.
+    elif "/day" in raw or "per day" in raw or re.search(r"\d[\s,.]*daily\b", raw):
         low *= 260
     elif "/week" in raw or "/wk" in raw or "per week" in raw or "weekly" in raw or "per wk" in raw:
         low *= 52
