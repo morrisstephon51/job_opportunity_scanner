@@ -114,7 +114,19 @@ def _salary_score(job: dict) -> float:
     # form, "bi weekly" falls through to "weekly" x52, doubling the multiplier.
     # Same fix applied to "semi monthly" -> semimonthly x24 (else monthly x12,
     # a 0.5x undercount that buries above-floor roles). See issue #32.
-    if "biweekly" in raw or "bi-weekly" in raw or "bi weekly" in raw:
+    # Guard: explicit per-year markers mean the amount is already annual — skip all
+    # frequency multipliers. Without this guard, a salary string like
+    # "$75,000/year, paid biweekly" picks up "biweekly" and applies x26, inflating
+    # a $75k annual salary to $1.95M and falsely triggering ALERT_SCORE_THRESHOLD.
+    # Same class as PR #31 (bare "hour") and PR #29 ("week"/"month"): subsidiary
+    # salary text triggering the wrong cadence branch. PR #28 flagged this case as
+    # out-of-scope ("annual figure carrying a cadence note"); filing now as #43.
+    # Avoid bare "annual": it is a substring of "semi-annual" and would silently
+    # skip the x24 semimonthly multiplier for a $2k semi-annual posting. Use only
+    # unambiguous anchored forms: "/year", "/yr", "per year", "per annum".
+    if "/year" in raw or "/yr" in raw or "per year" in raw or "per annum" in raw:
+        pass  # amount already annual; no frequency multiplier needed
+    elif "biweekly" in raw or "bi-weekly" in raw or "bi weekly" in raw:
         low *= 26
     elif "semimonthly" in raw or "semi-monthly" in raw or "semi monthly" in raw:
         low *= 24
