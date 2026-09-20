@@ -129,8 +129,12 @@ def _salary_score(job: dict) -> float:
     # "/yr" already covers the slash form ("$80k/yr"); "per year" covers the full
     # space form — but the hybrid "per yr" matches neither and falls through to the
     # biweekly 26x branch, falsely inflating $75k → $1.95M. See #47.
+    # "a year" is the natural-English equivalent of "per year" (e.g. "$42k a year,
+    # paid biweekly"). Without this guard "a year" falls through to the biweekly
+    # branch and multiplies by 26, inflating a below-floor annual salary to
+    # a false ALERT. "a year" is not a substring of any cadence word. See #49.
     if ("/year" in raw or "/yr" in raw or "per year" in raw or "per yr" in raw
-            or "per annum" in raw or "yearly" in raw):
+            or "per annum" in raw or "yearly" in raw or "a year" in raw):
         pass  # amount already annual; no frequency multiplier needed
     elif "biweekly" in raw or "bi-weekly" in raw or "bi weekly" in raw:
         low *= 26
