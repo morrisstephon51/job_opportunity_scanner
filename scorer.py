@@ -133,8 +133,14 @@ def _salary_score(job: dict) -> float:
     # paid biweekly"). Without this guard "a year" falls through to the biweekly
     # branch and multiplies by 26, inflating a below-floor annual salary to
     # a false ALERT. "a year" is not a substring of any cadence word. See #49.
+    # "annually" is the adverbial form of "annual" (e.g. "$65k annually, biweekly").
+    # Like "yearly" and "a year", it is not a substring of any cadence branch word
+    # (biweekly, semimonthly, weekly, monthly, hourly, daily) — safe to add bare.
+    # Note: "annual" alone is avoided because it appears inside "semi-annual"; but
+    # "annually" as a cadence override does not exist in the codebase. See #51.
     if ("/year" in raw or "/yr" in raw or "per year" in raw or "per yr" in raw
-            or "per annum" in raw or "yearly" in raw or "a year" in raw):
+            or "per annum" in raw or "yearly" in raw or "a year" in raw
+            or "annually" in raw):
         pass  # amount already annual; no frequency multiplier needed
     elif "biweekly" in raw or "bi-weekly" in raw or "bi weekly" in raw:
         low *= 26
