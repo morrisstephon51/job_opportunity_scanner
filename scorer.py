@@ -123,8 +123,9 @@ def _salary_score(job: dict) -> float:
     # out-of-scope ("annual figure carrying a cadence note"); filing now as #43.
     # Avoid bare "annual": it is a substring of "semi-annual" and would silently
     # skip the x24 semimonthly multiplier for a $2k semi-annual posting. Use only
-    # unambiguous anchored forms: "/year", "/yr", "per year", "per annum".
-    if "/year" in raw or "/yr" in raw or "per year" in raw or "per annum" in raw:
+    # unambiguous anchored forms. "yearly" is safe — it is not a substring of any
+    # other pay-cadence word, unlike "annual" (inside "semi-annual"). See #45.
+    if "/year" in raw or "/yr" in raw or "per year" in raw or "per annum" in raw or "yearly" in raw:
         pass  # amount already annual; no frequency multiplier needed
     elif "biweekly" in raw or "bi-weekly" in raw or "bi weekly" in raw:
         low *= 26
