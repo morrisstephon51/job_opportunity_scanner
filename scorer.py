@@ -142,9 +142,15 @@ def _salary_score(job: dict) -> float:
     # paralleling "per yr" vs "per year" (#47). Without this guard "a yr" falls
     # through to the biweekly branch and multiplies by 26, inflating $42k -> $1.09M.
     # "a yr" is not a substring of any cadence word. See #53.
+    # "p.a." is the Latin abbreviation for "per annum", common in formal corporate
+    # and public-sector postings (e.g. "$85k p.a., paid biweekly"). The raw string
+    # is lowercased but periods are retained, so "p.a." matches intact. Without this
+    # guard "p.a." falls through to the biweekly branch and multiplies by 26,
+    # inflating $85k -> $2.21M. "p.a." is not a substring of any cadence branch
+    # word. See #55.
     if ("/year" in raw or "/yr" in raw or "per year" in raw or "per yr" in raw
             or "per annum" in raw or "yearly" in raw or "a year" in raw
-            or "annually" in raw or "a yr" in raw):
+            or "annually" in raw or "a yr" in raw or "p.a." in raw):
         pass  # amount already annual; no frequency multiplier needed
     elif "biweekly" in raw or "bi-weekly" in raw or "bi weekly" in raw:
         low *= 26
