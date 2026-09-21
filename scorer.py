@@ -154,10 +154,17 @@ def _salary_score(job: dict) -> float:
     # is not a substring of any cadence word (biweekly, semimonthly, weekly,
     # monthly, hourly, daily). Without this guard "$42k/annum, biweekly" multiplies
     # by 26, inflating $42k -> $1.09M. See #57.
+    # "annualized" is the participial form meaning the figure has been normalized
+    # to an annual equivalent (e.g. "$65k annualized, biweekly", "annualized
+    # salary: $80k, paid weekly"). Common in corporate/government postings.
+    # "annualized" is not a substring of any cadence word, and is NOT a substring
+    # of "semi-annual" (which contains "annual" but not "annualized"). Without
+    # this guard "$65k annualized, biweekly" multiplies by 26, inflating
+    # $65k -> $1.69M. See #59.
     if ("/year" in raw or "/yr" in raw or "per year" in raw or "per yr" in raw
             or "per annum" in raw or "/annum" in raw or "yearly" in raw
             or "a year" in raw or "annually" in raw or "a yr" in raw
-            or "p.a." in raw):
+            or "p.a." in raw or "annualized" in raw):
         pass  # amount already annual; no frequency multiplier needed
     elif "biweekly" in raw or "bi-weekly" in raw or "bi weekly" in raw:
         low *= 26
