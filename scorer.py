@@ -148,9 +148,16 @@ def _salary_score(job: dict) -> float:
     # guard "p.a." falls through to the biweekly branch and multiplies by 26,
     # inflating $85k -> $2.21M. "p.a." is not a substring of any cadence branch
     # word. See #55.
+    # "/annum" is the slash form of "per annum" (e.g. "$90k/annum, paid biweekly"),
+    # mirroring the existing "/yr" <-> "per yr" <-> "per year" pattern. "per annum"
+    # is already guarded; "/annum" is its missing slash-separated sibling. "annum"
+    # is not a substring of any cadence word (biweekly, semimonthly, weekly,
+    # monthly, hourly, daily). Without this guard "$42k/annum, biweekly" multiplies
+    # by 26, inflating $42k -> $1.09M. See #57.
     if ("/year" in raw or "/yr" in raw or "per year" in raw or "per yr" in raw
-            or "per annum" in raw or "yearly" in raw or "a year" in raw
-            or "annually" in raw or "a yr" in raw or "p.a." in raw):
+            or "per annum" in raw or "/annum" in raw or "yearly" in raw
+            or "a year" in raw or "annually" in raw or "a yr" in raw
+            or "p.a." in raw):
         pass  # amount already annual; no frequency multiplier needed
     elif "biweekly" in raw or "bi-weekly" in raw or "bi weekly" in raw:
         low *= 26
