@@ -10,6 +10,42 @@ from config import (
 )
 
 
+# --- Pay-cadence detection (used by _salary_score) ----------------------------
+# Pay cadence is a *category* match: each cadence has many surface forms
+# ("/yr", "per annum", "p.a.", "annualized", "a year" all mean "annual"), so
+# detecting it with a growing list of literal `... in raw` substrings is the
+# substring-collision trap this file already hit for "il"->Nashville and
+# "ai"->retail — and it never terminates (every new spelling needs another
+# branch). Match each cadence with ONE anchored regex family instead. Word
+# boundaries plus a required leading "/" / "per " / digit keep the patterns from
+# firing inside descriptive text ("3 weeks PTO", "24-hour support", "flexible
+# hours", "DailyPay", or the state code "PA"). Adding a genuinely new surface
+# form is now a one-token pattern edit, unit-tested in tests/test_salary_cadence.py.
+
+# "Already annual" — the figure needs no frequency multiplier. The "annually"/
+# "annualized" forms are boundary- and lookbehind-guarded so they do NOT fire
+# inside "semi-annually"/"bi-annual" (those are twice-a-year cadences, not
+# annual) — a collision the literal-substring approach silently reintroduces
+# ("annually" is a substring of "semi-annually"). "p.a." requires its dot so it
+# can't collide with the lowercased state code "pa".
+_ALREADY_ANNUAL = re.compile(
+    r"/(?:year|yr|annum)\b"
+    r"|per\s+(?:year|yr|annum)\b"
+    r"|\ba\s+(?:year|yr)\b"
+    r"|\byearly\b"
+    r"|\bp\.a\.?"
+    r"|(?<!semi-)(?<!semi )(?<!bi-)(?<!bi )\bannual(?:ly|ized)\b"
+)
+# Compound cadences must be tested BEFORE the generic weekly/monthly patterns:
+# "weekly" is a substring of "bi-weekly" and "monthly" of "semi-monthly".
+_BIWEEKLY = re.compile(r"\bbi[\s-]?weekly\b")            # x26 (26 pay periods/yr)
+_SEMIMONTHLY = re.compile(r"\bsemi[\s-]?monthly\b")      # x24 (24 pay periods/yr)
+_HOURLY = re.compile(r"/(?:hour|hr)\b|per\s+(?:hour|hr)\b|\bhourly\b")  # x2080
+_DAILY = re.compile(r"/day\b|per\s+day\b|\d[\s,.]*daily\b")           # x260 (working days/yr)
+_WEEKLY = re.compile(r"/(?:week|wk)\b|per\s+(?:week|wk)\b|\bweekly\b")  # x52
+_MONTHLY = re.compile(r"/(?:month|mo)\b|per\s+(?:month|mo)\b|\bmonthly\b")  # x12
+
+
 def is_agency(job: dict) -> bool:
     company = (job.get("company") or "").lower()
     return any(block in company for block in AGENCY_BLOCKLIST)
@@ -99,11 +135,24 @@ def _salary_score(job: dict) -> float:
     if m.group(2):  # "k" suffix -> thousands
         low *= 1000
     # Normalize to an annual figure before comparing to the floor.
-    if "hour" in raw or "/hr" in raw or "per hour" in raw:
+    # Specificity-first ordering (see the _*_ pattern definitions above):
+    #   1. already-annual wins even when a cadence NOTE co-occurs, e.g.
+    #      "$75k/year, paid biweekly" is $75k, not $75k x26.
+    #   2. bi-weekly (x26) / semi-monthly (x24) before weekly/monthly, since
+    #      "weekly"/"monthly" are substrings of "bi-weekly"/"semi-monthly".
+    if _ALREADY_ANNUAL.search(raw):
+        pass  # amount is already annual; no frequency multiplier
+    elif _BIWEEKLY.search(raw):
+        low *= 26
+    elif _SEMIMONTHLY.search(raw):
+        low *= 24
+    elif _HOURLY.search(raw):
         low *= 2080
-    elif "week" in raw or "/wk" in raw or "per week" in raw:
+    elif _DAILY.search(raw):
+        low *= 260
+    elif _WEEKLY.search(raw):
         low *= 52
-    elif "month" in raw or "/mo" in raw or "per month" in raw:
+    elif _MONTHLY.search(raw):
         low *= 12
     return 1.0 if low >= SALARY_FLOOR else max(0.0, low / SALARY_FLOOR)
 
