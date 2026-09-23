@@ -43,7 +43,10 @@ AGENCY_BLOCKLIST = [
     "kelly services",
     "insight global",
     "apex systems",
-    "tek systems",
+    # TEKsystems (a top US IT staffing firm) registers as one word on
+    # ZipRecruiter/Indeed, so the space form never substring-matched
+    # "teksystems" and its postings slipped past is_agency().
+    "teksystems",
     "cybercoders",
 ]
 
