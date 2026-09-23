@@ -69,7 +69,16 @@ def _keyword_score(job: dict) -> float:
         job.get("title") or "",
         job.get("description") or "",
     ]).lower()
-    hits = sum(1 for kw in SEARCH_KEYWORDS if kw.lower() in text)
+    # Match each keyword as a whole word/phrase, not a bare substring — the same
+    # collision guard already applied to _title_score ("ai" -> retAIl) and
+    # _location_score ("il" -> NashvILle). SEARCH_KEYWORDS is user-tunable
+    # (config.py: "edit this file to tune your search"); the moment a short
+    # keyword like "AI" or "IT" is added, `kw in text` fires inside digITal /
+    # retAIl / emAIl and inflates this 30%-weighted score on irrelevant jobs.
+    # Word boundaries are a no-op for the current multi-word phrases (proven in
+    # tests/test_keyword_boundary.py) and correct for short tokens.
+    hits = sum(1 for kw in SEARCH_KEYWORDS
+               if re.search(rf"\b{re.escape(kw.lower())}\b", text))
     return min(hits / 4, 1.0)  # 4+ keyword hits = perfect
 
 
