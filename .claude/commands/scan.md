@@ -49,6 +49,12 @@ Merge both source lists. Then remove any job where:
 - Company name contains any of: staffing, recruiting, talent solutions, manpower, randstad, robert half, adecco, kelly services, insight global, apex systems, tek systems, cybercoders
 - Posted more than 7 days ago (skip if date unknown — include it)
 
+> **Use the code, not this list.** The blocklist and recency rules above are a
+> human-readable summary of `scorer.is_agency()` / `scorer.is_recent()` (fed by
+> `config.py`). Apply the filter by calling those functions — do not re-derive
+> the rules by hand. The inline copies here are reference only and must mirror
+> `config.py`; if they ever disagree, the code wins.
+
 ---
 
 ## Step 4 — Score Each Job (1–10)
@@ -57,12 +63,20 @@ Score each remaining job using these weighted criteria:
 
 | Criterion | Weight | Full score if... |
 |-----------|--------|-----------------|
-| Title match | 40% | Title contains 3+ of: ai, educator, education, instructional, designer, training, learning, edtech, digital, curriculum, healthcare it, coordinator, specialist, facilitator |
+| Title match | 40% | Title contains 3+ of: ai, educator, education, instructional, designer, training, trainer, learning, edtech, digital, curriculum, healthcare it, community, coordinator, specialist, facilitator, developer |
 | Keyword match | 30% | Description/title contains 4+ of the search keywords above |
 | Location | 20% | Remote = 10/10; Chicago/IL = 10/10; Hybrid = 7/10; Other = 2/10 |
 | Salary | 10% | Listed salary ≥ $55,000 = 10/10; Not listed = 5/10; Below floor = proportional |
 
 Multiply each component × weight, sum, multiply by 10, round to nearest integer (min 1, max 10).
+
+> **Source of truth = `scorer.py` + `config.py`.** Score with
+> `scorer.score_job()`; the criteria table above only mirrors it. The signal
+> lists, weights, salary/recency parsing and the agency blocklist all live in
+> `config.py`/`scorer.py`, which are unit-tested. Do not hand-score off a stale
+> copy — that is how the `trainer` title signal (added to `config.py` so the
+> literal "healthcare IT trainer" query stops scoring zero) went missing from
+> this prompt while the code was already fixed.
 
 ---
 
