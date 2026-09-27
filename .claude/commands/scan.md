@@ -16,15 +16,33 @@ Run a full job scan across ZipRecruiter and Indeed. Follow every step below exac
 
 ## Step 1 — Search ZipRecruiter
 
-Call `mcp__ZipRecruiter__search_jobs` for EACH of the following queries. Use `salary_min: 55000`, `max_posted_minutes_ago: 10080` (7 days), location `Chicago, IL`, radius `35`. Also run each with `location_types: ["REMOTE"]` (no location field for remote).
+**The query set is `config.SEARCH_KEYWORDS` — read it from `config.py`, do not
+use a list typed into this prompt.** Run one search per entry, verbatim: these
+are the same terms the scorer's `_keyword_score()` already credits, so any term
+you skip is a term the scanner rewards but never looks for.
 
-Queries:
+Call `mcp__ZipRecruiter__search_jobs` once per keyword. Use `salary_min` =
+`config.SALARY_FLOOR`, `max_posted_minutes_ago` = `config.MAX_DAYS_OLD` × 1440
+(7 days = 10080), location `Chicago, IL` from `config.LOCATIONS`, radius
+`config.RADIUS_MILES` (35). Also run each keyword with
+`location_types: ["REMOTE"]` (no location field for remote).
+
+As of this writing `config.SEARCH_KEYWORDS` holds 8 entries — mirrored here for
+reference only; **`config.py` wins if they disagree**:
+
 1. "AI educator"
 2. "instructional designer"
-3. "training specialist EdTech"
-4. "digital learning coordinator"
-5. "healthcare IT trainer"
+3. "training specialist"
+4. "digital learning"
+5. "EdTech coordinator"
 6. "community tech educator"
+7. "healthcare IT trainer"
+8. "learning experience designer"
+
+Send each one as written. Do not merge two keywords into one query and do not
+append extra words to narrow it — "training specialist EdTech" is a different,
+narrower query than the configured "training specialist", and it silently drops
+the postings the configured term was meant to surface.
 
 Collect all results into a list. Deduplicate by job title + company name.
 
@@ -32,12 +50,19 @@ Collect all results into a list. Deduplicate by job title + company name.
 
 ## Step 2 — Search Indeed
 
-Call `mcp__Indeed__search_jobs` for EACH of the following. Use `country_code: "US"`, `job_type: "fulltime"`.
+Call `mcp__Indeed__search_jobs` for EACH entry of `config.SEARCH_KEYWORDS` —
+the same 8 terms as Step 1, not a hand-mashed combination of them. Use
+`country_code: "US"`, `job_type: "fulltime"`, and run each for location
+`"Chicago, IL"` AND `"remote"`.
 
-Queries (run each for location `"Chicago, IL"` AND `"remote"`):
-1. `search: "AI educator instructional designer"`
-2. `search: "training specialist EdTech digital learning"`
-3. `search: "healthcare IT training coordinator"`
+```
+for kw in config.SEARCH_KEYWORDS:      # 8 terms, verbatim
+    mcp__Indeed__search_jobs(search=kw, location="Chicago, IL", ...)
+    mcp__Indeed__search_jobs(search=kw, location="remote", ...)
+```
+
+Concatenating keywords ANDs them into a single narrow query and loses every
+posting that matches only one term.
 
 Collect and deduplicate results (title + company).
 
