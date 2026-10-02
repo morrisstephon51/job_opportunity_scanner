@@ -90,6 +90,10 @@ CASES = [
     ("$50/hour", 1.0, "full '/hour' -> x2080"),
     ("$1,200 weekly", 1.0, "'weekly' word form -> x52 = $62.4k"),
     ("$5,000 monthly", 1.0, "'monthly' word form -> x12 = $60k"),
+    ("$42,000 annual, paid biweekly", _prop(42000), "bare 'annual' below floor, NOT biweekly x26"),
+    ("$80,000 annual salary, biweekly", 1.0, "bare 'annual' adjective before noun"),
+    ("$75,000 annual compensation, paid biweekly", 1.0, "'annual compensation' bare adjective"),
+    ("$42,000/annual, biweekly", _prop(42000), "slash + full word '/annual' (not only '/annum')"),
 
     # --- NEGATIVE: descriptive text must NOT trigger a cadence multiplier ---
     ("$48,000, 3 weeks PTO", _prop(48000), "'3 weeks PTO' is not weekly pay (no x52)"),
@@ -98,6 +102,8 @@ CASES = [
     ("$45,000, flexible hours", _prop(45000), "'flexible hours' is not hourly pay"),
     ("$80,000 with DailyPay app access", 1.0, "'DailyPay' benefit is not a day rate; stays $80k"),
     ("$75,000 + daily pay advance", 1.0, "'daily pay advance' benefit is not a day rate; stays $75k"),
+    ("$2,000 bi-annual, paid monthly", _prop(24000), "bi-annual (bare, no -ly) is twice-yearly NOT annual; monthly x12"),
+    ("$3,000 semi-annual bonus, paid monthly", _prop(36000), "semi-annual (bare) NOT annual-guarded; monthly x12"),
     ("$2,000 semi-annually, paid monthly", 1.0, "semi-annually is NOT already-annual; monthly x12=$24k... "),
 ]
 
