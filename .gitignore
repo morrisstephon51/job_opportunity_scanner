@@ -1,0 +1,3 @@
+# Python bytecode / caches (generated when running the test suite)
+__pycache__/
+*.py[cod]
