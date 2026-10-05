@@ -22,11 +22,13 @@ from config import (
 # hours", "DailyPay", or the state code "PA"). Adding a genuinely new surface
 # form is now a one-token pattern edit, unit-tested in tests/test_salary_cadence.py.
 
-# "Already annual" — the figure needs no frequency multiplier. The "annually"/
-# "annualized" forms are boundary- and lookbehind-guarded so they do NOT fire
-# inside "semi-annually"/"bi-annual" (those are twice-a-year cadences, not
+# "Already annual" — the figure needs no frequency multiplier. The suffix is
+# optional so the bare adjective "annual" ("$80k annual, paid biweekly", the
+# commonest form of all) resolves alongside "annually"/"annualized". All three
+# are boundary- and lookbehind-guarded so they do NOT fire inside
+# "semi-annual(ly)"/"bi-annual(ly)" (those are twice-a-year cadences, not
 # annual) — a collision the literal-substring approach silently reintroduces
-# ("annually" is a substring of "semi-annually"). "p.a." requires its dot so it
+# ("annual" is a substring of "semi-annual"). "p.a." requires its dot so it
 # can't collide with the lowercased state code "pa".
 _ALREADY_ANNUAL = re.compile(
     r"/(?:year|yr|annum)\b"
@@ -34,7 +36,7 @@ _ALREADY_ANNUAL = re.compile(
     r"|\ba\s+(?:year|yr)\b"
     r"|\byearly\b"
     r"|\bp\.a\.?"
-    r"|(?<!semi-)(?<!semi )(?<!bi-)(?<!bi )\bannual(?:ly|ized)\b"
+    r"|(?<!semi-)(?<!semi )(?<!bi-)(?<!bi )\bannual(?:ly|ized)?\b"
 )
 # Compound cadences must be tested BEFORE the generic weekly/monthly patterns:
 # "weekly" is a substring of "bi-weekly" and "monthly" of "semi-monthly".
