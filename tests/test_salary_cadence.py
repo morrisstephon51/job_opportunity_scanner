@@ -81,6 +81,7 @@ CASES = [
     ("$250 per day", 1.0, "per day x260 = $65k"),
     ("$200 daily", _prop(52000), "digit-anchored daily x260 = $52k, below floor (#41)"),
     ("$30 per hr", 1.0, "per hr abbrev (#36)"),
+    ("$30/h", 1.0, "bare /h abbrev x2080 = $62.4k (#75)"),
     ("$900 per wk", _prop(46800), "per wk abbrev x52, below floor (#38)"),
     ("$4,500 per mo", _prop(54000), "per mo abbrev x12, below floor (#38)"),
 
@@ -100,6 +101,7 @@ CASES = [
     ("$50,000, 12 months health coverage", _prop(50000), "'12 months' is not monthly pay (no x12)"),
     ("$40,000 salary, 24-hour support desk", _prop(40000), "'24-hour' is not hourly pay (no x2080)"),
     ("$45,000, flexible hours", _prop(45000), "'flexible hours' is not hourly pay"),
+    ("$45,000 highway benefits", _prop(45000), "/highway does NOT trigger hourly (/h\b boundary)"),
     ("$80,000 with DailyPay app access", 1.0, "'DailyPay' benefit is not a day rate; stays $80k"),
     ("$75,000 + daily pay advance", 1.0, "'daily pay advance' benefit is not a day rate; stays $75k"),
     ("$2,000 bi-annual, paid monthly", _prop(24000), "bi-annual (bare, no -ly) is twice-yearly NOT annual; monthly x12"),

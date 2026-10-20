@@ -42,7 +42,7 @@ _ALREADY_ANNUAL = re.compile(
 # "weekly" is a substring of "bi-weekly" and "monthly" of "semi-monthly".
 _BIWEEKLY = re.compile(r"\bbi[\s-]?weekly\b")            # x26 (26 pay periods/yr)
 _SEMIMONTHLY = re.compile(r"\bsemi[\s-]?monthly\b")      # x24 (24 pay periods/yr)
-_HOURLY = re.compile(r"/(?:hour|hr)\b|per\s+(?:hour|hr)\b|\bhourly\b")  # x2080
+_HOURLY = re.compile(r"/(?:hour|hr|h)\b|per\s+(?:hour|hr)\b|\bhourly\b")  # x2080
 _DAILY = re.compile(r"/day\b|per\s+day\b|\d[\s,.]*daily\b")           # x260 (working days/yr)
 _WEEKLY = re.compile(r"/(?:week|wk)\b|per\s+(?:week|wk)\b|\bweekly\b")  # x52
 _MONTHLY = re.compile(r"/(?:month|mo)\b|per\s+(?:month|mo)\b|\bmonthly\b")  # x12
