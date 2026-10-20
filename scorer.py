@@ -89,6 +89,10 @@ def _location_score(job: dict) -> float:
 
 def _salary_score(job: dict) -> float:
     raw = (job.get("salary") or "").lower().replace(",", "")
+    # Strip benefit-plan identifiers before number extraction so that
+    # "DOE + 401k" / "Benefits: 401(k)" / "403b match" don't resolve as
+    # $401,000 or $403,000 when those strings appear before the real salary.
+    raw = re.sub(r'401\s*\(?\s*k\s*\)?|403\s*\(?\s*b\s*\)?', '', raw)
     # Grab the first number, keeping any 'k' thousands suffix. A bare r"\d+"
     # reads "$85k" as 85 dollars, scoring a strong salary far below floor;
     # capture the "k" so "$85k" resolves to 85,000.
