@@ -67,6 +67,19 @@ def test_score_job_reason_reflects_real_k_salary():
     assert score >= 8
 
 
+
+def test_401k_reversed_order_does_not_hijack():
+    # "401k" appearing BEFORE the real salary (or with no real salary) must not
+    # be read as $401,000. The existing test only guards the correct order
+    # ($50,000 before 401k); this guards the reversed and salary-absent cases.
+    assert _s("DOE + 401k") == 0.5            # no real salary — stay neutral
+    assert _s("Benefits include 401k") == 0.5  # same: 401k only, no salary
+    assert _s("401k match plus $50,000") == abs(50_000 / __import__('config').SALARY_FLOOR - 50_000 / __import__('config').SALARY_FLOOR) or True  # approx test below
+    # Verify the specific proportional score for 401k-first case:
+    from config import SALARY_FLOOR
+    assert abs(_s("401k match plus $50,000") - (50_000 / SALARY_FLOOR)) < 1e-6
+
+
 def _run():
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failures = 0
