@@ -66,6 +66,16 @@ CASES = [
     ("$3,000 semi-monthly", 1.0, "hyphen form"),
     ("$3,000 semi monthly", 1.0, "space form (#32)"),
 
+    # --- DISCRIMINATING: biweekly must use x26, NOT the weekly x52 branch.
+    #     The $2,300 cases above clear the $55k floor under BOTH x26 ($59.8k)
+    #     and x52 ($119.6k), so they pass even if "biweekly" wrongly falls
+    #     through to the weekly x52 branch. These sub-floor amounts separate
+    #     the two: x26=$39k stays below floor (proportional) while the x52
+    #     bug inflates it to $78k = 1.0. Pins #77 (and the #32 space form).
+    ("$1,500 biweekly", _prop(39000), "one word: x26=$39k below floor, NOT x52=$78k (#77)"),
+    ("$1,500 bi-weekly", _prop(39000), "hyphen form, x26 not x52 (#77)"),
+    ("$1,500 bi weekly", _prop(39000), "space form, x26 not x52 (#77/#32)"),
+
     # --- PARITY: base cadences (unchanged from the original scorer) ---
     ("$5,000/month", 1.0, "monthly x12 = $60k"),
     ("$1,500/week", 1.0, "weekly x52 = $78k"),
