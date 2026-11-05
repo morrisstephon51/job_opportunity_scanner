@@ -46,7 +46,7 @@ Collect and deduplicate results (title + company).
 ## Step 3 — Combine & Filter
 
 Merge both source lists. Then remove any job where:
-- Company name contains any of: staffing, recruiting, talent solutions, manpower, randstad, robert half, adecco, kelly services, insight global, apex systems, tek systems, cybercoders
+- Company name contains any of: staffing, recruiting, talent solutions, manpower, randstad, robert half, adecco, kelly services, insight global, apex systems, teksystems, cybercoders
 - Posted more than 7 days ago (skip if date unknown — include it)
 
 ---
