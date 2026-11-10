@@ -105,6 +105,18 @@ CASES = [
     ("$75,000 annual compensation, paid biweekly", 1.0, "'annual compensation' bare adjective"),
     ("$42,000/annual, biweekly", _prop(42000), "slash + full word '/annual' (not only '/annum')"),
 
+    # --- GENERAL: natural-English "<amount> an hour / a week / a month" forms.
+    #     Indeed's canonical display ("$25 an hour"). The pre-refactor scorer
+    #     caught these via a bare substring; anchoring for the #30 false positives
+    #     dropped them, under-scoring real sub-annual pay to ~0. Below-floor amounts
+    #     discriminate the fix (x-mult) from the regression (x1 -> ~0).
+    ("$25 an hour", _prop(52000), "'an hour' x2080=$52k below floor; regression x1 would be ~0"),
+    ("$25.00 an hour", _prop(52000), "cents form, same x2080"),
+    ("$30 an hr", 1.0, "'an hr' abbrev x2080=$62.4k"),
+    ("$900 a week", _prop(46800), "'a week' x52=$46.8k below floor; regression x1 would be ~0"),
+    ("$4,000 a month", _prop(48000), "'a month' x12=$48k below floor; regression x1 would be ~0"),
+    ("$85,000 a year", 1.0, "'a year' already-annual guard still wins over sub-annual forms"),
+
     # --- NEGATIVE: descriptive text must NOT trigger a cadence multiplier ---
     ("$48,000, 3 weeks PTO", _prop(48000), "'3 weeks PTO' is not weekly pay (no x52)"),
     ("$50,000, 12 months health coverage", _prop(50000), "'12 months' is not monthly pay (no x12)"),
@@ -112,6 +124,9 @@ CASES = [
     ("$45,000, flexible hours", _prop(45000), "'flexible hours' is not hourly pay"),
     ("$80,000 with DailyPay app access", 1.0, "'DailyPay' benefit is not a day rate; stays $80k"),
     ("$75,000 + daily pay advance", 1.0, "'daily pay advance' benefit is not a day rate; stays $75k"),
+    ("$48,000, a week of PTO", _prop(48000), "'a week of PTO' benefit prose NOT weekly pay (of-guard)"),
+    ("$52,000, a month of training", _prop(52000), "'a month of training' NOT monthly pay (of-guard)"),
+    ("$60,000 salary, an hour of onboarding", 1.0, "'an hour of onboarding' NOT hourly pay (of-guard); stays $60k"),
     ("$2,000 bi-annual, paid monthly", _prop(24000), "bi-annual (bare, no -ly) is twice-yearly NOT annual; monthly x12"),
     ("$3,000 semi-annual bonus, paid monthly", _prop(36000), "semi-annual (bare) NOT annual-guarded; monthly x12"),
     ("$2,000 semi-annually, paid monthly", 1.0, "semi-annually is NOT already-annual; monthly x12=$24k... "),

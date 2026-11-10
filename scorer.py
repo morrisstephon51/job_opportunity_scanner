@@ -40,12 +40,23 @@ _ALREADY_ANNUAL = re.compile(
 )
 # Compound cadences must be tested BEFORE the generic weekly/monthly patterns:
 # "weekly" is a substring of "bi-weekly" and "monthly" of "semi-monthly".
+# The hourly/weekly/monthly families also match the natural-English
+# "<amount> an hour / a week / a month" forms (Indeed's canonical display,
+# e.g. "$25 an hour"), mirroring the "a year"/"a yr" case in _ALREADY_ANNUAL.
+# The pre-refactor scorer caught these via a bare "hour"/"week"/"month"
+# substring; anchoring to kill the "24-hour support"/"flexible hours" false
+# positives (#30) silently dropped them, under-scoring real sub-annual pay to
+# ~0. The "a/an " prefix restores the rate; the (?!\s+of) guard keeps benefit
+# prose like "a week of PTO" / "a month of training" from re-triggering it.
+# "a day" is intentionally omitted: it was never in the pre-refactor scorer
+# (so no regression) and collides with "a day off" prose; "/day" + "per day"
+# already cover day rates.
 _BIWEEKLY = re.compile(r"\bbi[\s-]?weekly\b")            # x26 (26 pay periods/yr)
 _SEMIMONTHLY = re.compile(r"\bsemi[\s-]?monthly\b")      # x24 (24 pay periods/yr)
-_HOURLY = re.compile(r"/(?:hour|hr)\b|per\s+(?:hour|hr)\b|\bhourly\b")  # x2080
+_HOURLY = re.compile(r"/(?:hour|hr)\b|per\s+(?:hour|hr)\b|\ban\s+(?:hour|hr)\b(?!\s+of\b)|\bhourly\b")  # x2080
 _DAILY = re.compile(r"/day\b|per\s+day\b|\d[\s,.]*daily\b")           # x260 (working days/yr)
-_WEEKLY = re.compile(r"/(?:week|wk)\b|per\s+(?:week|wk)\b|\bweekly\b")  # x52
-_MONTHLY = re.compile(r"/(?:month|mo)\b|per\s+(?:month|mo)\b|\bmonthly\b")  # x12
+_WEEKLY = re.compile(r"/(?:week|wk)\b|per\s+(?:week|wk)\b|\ba\s+(?:week|wk)\b(?!\s+of\b)|\bweekly\b")  # x52
+_MONTHLY = re.compile(r"/(?:month|mo)\b|per\s+(?:month|mo)\b|\ba\s+(?:month|mo)\b(?!\s+of\b)|\bmonthly\b")  # x12
 
 
 def is_agency(job: dict) -> bool:
