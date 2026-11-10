@@ -53,7 +53,7 @@ _ALREADY_ANNUAL = re.compile(
 # already cover day rates.
 _BIWEEKLY = re.compile(r"\bbi[\s-]?weekly\b")            # x26 (26 pay periods/yr)
 _SEMIMONTHLY = re.compile(r"\bsemi[\s-]?monthly\b")      # x24 (24 pay periods/yr)
-_HOURLY = re.compile(r"/(?:hour|hr)\b|per\s+(?:hour|hr)\b|\ban\s+(?:hour|hr)\b(?!\s+of\b)|\bhourly\b")  # x2080
+_HOURLY = re.compile(r"/(?:hour|hr|h)\b|per\s+(?:hour|hr)\b|\ban\s+(?:hour|hr)\b(?!\s+of\b)|\bhourly\b")  # x2080
 _DAILY = re.compile(r"/day\b|per\s+day\b|\d[\s,.]*daily\b")           # x260 (working days/yr)
 _WEEKLY = re.compile(r"/(?:week|wk)\b|per\s+(?:week|wk)\b|\ba\s+(?:week|wk)\b(?!\s+of\b)|\bweekly\b")  # x52
 _MONTHLY = re.compile(r"/(?:month|mo)\b|per\s+(?:month|mo)\b|\ba\s+(?:month|mo)\b(?!\s+of\b)|\bmonthly\b")  # x12
